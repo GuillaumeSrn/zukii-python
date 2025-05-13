@@ -4,8 +4,7 @@ Microservice Python pour l'analyse automatisée de fichiers CSV dans le cadre du
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
 [![GitHub Actions](https://github.com/Wishk6/zukii-python/actions/workflows/ci.yml/badge.svg)](https://github.com/Wishk6/zukii-python/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 ## Fonctionnalités
 
 - Analyse statistique de fichiers CSV
@@ -25,58 +24,56 @@ Microservice Python pour l'analyse automatisée de fichiers CSV dans le cadre du
 ### Environnement local
 
 1. Cloner le dépôt :
+````bash
 git clone https://github.com/Wishk6/zukii-python.git
-cd zukii-analyse-service
-
-text
-
+cd zukii-analyse-service</code>
+````
 2. Créer un environnement virtuel :
+````bash
 python -m venv venv
 source venv/bin/activate # Linux/Mac
-
-ou .\venv\Scripts\activate # Windows
-text
+````
+ou 
+````bash
+.\venv\Scripts\activate # Windows
+````
 
 3. Installer les dépendances :
+````bash
 pip install -r requirements.txt
-
-text
-
+````
 ### Configuration
 
 Créer un fichier `.env` à la racine :
-OPENAI_API_KEY=ta-clé-api
+````text
+OPENAI_API_KEY=ton-api-key-openai
 JWT_SECRET_KEY=secret-key-1234
-
-text
+````
 
 ## Utilisation
 
 ### Lancer le service localement
+````bash
 python app/main.py
-
-text
-
+````
 ### Endpoints API
 
 **Analyse basique**
+```` bash
 curl -X POST -F "file=@/chemin/vers/fichier.csv" http://localhost:5000/analyse
-
-text
-
+````
+```` bash
 **Analyse avec OpenAI**
 curl -X POST -F "file=@/chemin/vers/fichier.csv" http://localhost:5000/analyse/advanced
-
-text
-
+````
 ### Avec Docker
+```` bash
 docker build -t zukii-analyse .
 docker run -p 5000:5000 --env-file .env zukii-analyse
-
-text
-
+````
 ## Structure du projet
-zukii-analyse-service/
+````text
+zukii-python-ms/
 ├── app/
 │ ├── init.py
 │ ├── main.py # Point d'entrée Flask
@@ -88,27 +85,22 @@ zukii-analyse-service/
 └── .github/
 └── workflows/
 └── ci.yml # Intégration continue
-
-text
-
+````
 ## Développement
 
 ### Exécuter les tests
+```` bash
 pytest tests/ -v
-
-text
-
+````
 ### Formatage du code
+```` bash
 black .
-
-text
-
+````
 ### Vérification linting
+```` bash
 flake8 .
-
-text
-
-## Contribution
+````
+## Contribution souhaitée
 
 1. Forker le projet
 2. Créer une branche (`git checkout -b feature/ma-fonctionnalité`)
@@ -116,9 +108,6 @@ text
 4. Pusher la branche (`git push origin feature/ma-fonctionnalité`)
 5. Ouvrir une Pull Request
 
-## Licence
-
-Distribué sous licence MIT. Voir `LICENSE` pour plus d'informations.
 
 ## Auteurs
 
