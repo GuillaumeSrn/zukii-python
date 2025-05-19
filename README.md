@@ -22,15 +22,16 @@ Microservice Python pour l'analyse automatisée de fichiers CSV dans le cadre du
 ## Installation
 
 ### Environnement local
-
+Utiliser python3 et pip3 en fonction des version
 1. Cloner le dépôt :
 ````bash
 git clone https://github.com/Wishk6/zukii-python.git
-cd zukii-analyse-service</code>
+cd zukii-python
 ````
 2. Créer un environnement virtuel :
 ````bash
 python -m venv venv
+python3 -m venv venv # Python3
 source venv/bin/activate # Linux/Mac
 ````
 ou 
