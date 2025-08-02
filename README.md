@@ -1,119 +1,139 @@
-# Zukii Analyse Service
+# 🚀 Zukii Analysis Service - MVP
 
-Microservice Python pour l'analyse automatisée de fichiers CSV dans le cadre du projet Zukii.
+Micro-service d'analyse IA simplifié pour fichiers CSV avec intégration OpenAI GPT.
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
-[![GitHub Actions](https://github.com/Wishk6/zukii-python/actions/workflows/ci.yml/badge.svg)](https://github.com/Wishk6/zukii-python/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-## Fonctionnalités
+## 📋 Fonctionnalités MVP
 
-- Analyse statistique de fichiers CSV
-- Intégration avec OpenAI pour des insights avancés
-- API REST sécurisée (JWT)
-- Monitoring avec Prometheus/Grafana
-- Hébergement Docker-ready
+### 🧠 Analyse IA
+- **Intégration OpenAI GPT** : Analyse intelligente de données CSV
+- **Analyse simplifiée** : Génération d'insights et recommandations
+- **Graphiques JSON** : Données de graphiques pour intégration frontend
+- **Anonymisation basique** : Protection des données sensibles
 
-## Prérequis
+### ⚡ Performance
+- **Service simplifié** : Code optimisé pour MVP
+- **Gestion d'erreurs** : Récupération gracieuse
+- **Validation basique** : Vérification des fichiers CSV
 
-- Python 3.10+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   NestJS API    │    │  Python Service │
+│   Angular       │───▶│   Backend       │───▶│   FastAPI       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                       │
+                                                       ▼
+                                              ┌─────────────────┐
+                                              │   OpenAI GPT    │
+                                              │   API           │
+                                              └─────────────────┘
+```
+
+## 🚀 Installation
+
+### Prérequis
+- Python 3.11+
 - Docker (optionnel)
-- OpenAI API Key (optionnel)
+- Clé API OpenAI
 
-## Installation
+### Installation locale
 
-### Environnement local
-Utiliser python3 et pip3 en fonction des version
-1. Cloner le dépôt :
-````bash
-git clone https://github.com/Wishk6/zukii-python.git
+1. **Cloner le repository**
+```bash
 cd zukii-python
-````
-2. Créer un environnement virtuel :
-````bash
+```
+
+2. **Créer l'environnement virtuel**
+```bash
 python -m venv venv
-python3 -m venv venv # Python3
-source venv/bin/activate # Linux/Mac
-````
-ou 
-````bash
-.\venv\Scripts\activate # Windows
-````
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate     # Windows
+```
 
-3. Installer les dépendances :
-````bash
+3. **Installer les dépendances**
+```bash
 pip install -r requirements.txt
-````
-### Configuration
+```
 
-Créer un fichier `.env` à la racine :
-````text
-OPENAI_API_KEY=ton-api-key-openai
-JWT_SECRET_KEY=secret-key-1234
-````
+4. **Configuration**
+```bash
+cp env.example .env
+# Éditer .env avec vos paramètres
+```
 
-## Utilisation
+5. **Lancer le service**
+```bash
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-### Lancer le service localement
-````bash
-python app/main.py
-````
-### Endpoints API
+### Installation Docker
 
-**Analyse basique**
-```` bash
-curl -X POST -F "file=@/chemin/vers/fichier.csv" http://localhost:5000/analyse
-````
-```` bash
-**Analyse avec OpenAI**
-curl -X POST -F "file=@/chemin/vers/fichier.csv" http://localhost:5000/analyse/advanced
-````
-### Avec Docker
-```` bash
-docker build -t zukii-analyse .
-docker run -p 5000:5000 --env-file .env zukii-analyse
-````
-## Structure du projet
-````text
-zukii-python-ms/
-├── app/
-│ ├── init.py
-│ ├── main.py # Point d'entrée Flask
-│ └── analyse.py # Logique d'analyse
-├── tests/
-│ └── test_analyse.py # Tests unitaires
-├── requirements.txt
-├── Dockerfile
-└── .github/
-└── workflows/
-└── ci.yml # Intégration continue
-````
-## Développement
+1. **Construire l'image**
+```bash
+docker build -t zukii-analysis .
+```
 
-### Exécuter les tests
-```` bash
-pytest tests/ -v
-````
-### Formatage du code
-```` bash
-black .
-````
-### Vérification linting
-```` bash
-flake8 .
-````
-## Contribution souhaitée
+2. **Lancer le conteneur**
+```bash
+docker run -p 8000:8000 --env-file .env zukii-analysis
+```
 
-1. Forker le projet
-2. Créer une branche (`git checkout -b feature/ma-fonctionnalité`)
-3. Commiter les changements (`git commit -m 'Ajout d'une super fonctionnalité'`)
-4. Pusher la branche (`git push origin feature/ma-fonctionnalité`)
-5. Ouvrir une Pull Request
+## 📚 API Documentation
 
+### Endpoints principaux
 
-## Auteurs
+#### `POST /api/v1/analyze`
+Analyse de fichiers CSV avec question personnalisée.
 
-- [Guillaume Saurin](https://github.com/Wishk6)
+**Paramètres :**
+- `files` : Fichiers CSV (multipart)
+- `question` : Question d'analyse
+- `analysis_type` : Type d'analyse (défaut: "general")
+- `include_charts` : Inclure des graphiques (défaut: true)
+- `anonymize_data` : Anonymiser les données (défaut: true)
 
----
+**Réponse :**
+```json
+{
+  "analysis_id": "uuid",
+  "summary": "Résumé de l'analyse",
+  "key_insights": [...],
+  "charts": [...],
+  "processing_time": 1.23
+}
+```
 
-> **Note** : Ce service fait partie de l'écosystème Zukii. Voir le [dépôt principal](https://github.com/Wishk6/zukii-python) pour l'architecture globale.
+#### `GET /`
+Point d'entrée principal avec informations du service.
+
+#### `GET /api/v1/health`
+Vérification de santé du service.
+
+#### `GET /api/v1/capabilities`
+Capacités du service.
+
+## 🔧 Configuration
+
+Variables d'environnement dans `.env` :
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_MAX_TOKENS=2000
+OPENAI_TEMPERATURE=0.3
+```
+
+## 🧪 Tests
+
+```bash
+pytest tests/
+```
+
+## 📝 Notes MVP
+
+- **Service simplifié** : Code optimisé pour MVP
+- **Graphiques JSON** : Données structurées pour frontend
+- **Anonymisation basique** : Protection RGPD simplifiée
+- **Performance** : Optimisé pour rapidité de développement
