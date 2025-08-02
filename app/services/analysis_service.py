@@ -5,14 +5,9 @@ Version ultra-simplifiée sans validation complexe
 
 import pandas as pd
 import uuid
-import json
-import base64
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
 import openai
-import plotly.express as px
-import plotly.graph_objects as go
-from io import BytesIO
 import logging
 import numpy as np
 
