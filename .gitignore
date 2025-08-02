@@ -1,4 +1,37 @@
+# Environnement virtuel
 venv/
+
+# Cache Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# Variables d'environnement
 .env
+
+# Logs
+*.log
+logs/
+
+# Cache de tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+test*.csv
+server.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
