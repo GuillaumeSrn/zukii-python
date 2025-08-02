@@ -97,17 +97,22 @@ class DataProcessor:
         ]
         
         for col in df.columns:
-            if df[col].dtype == 'object':
-                # Essayer de détecter si c'est une colonne de date
-                sample_values = df[col].dropna().head(10)
-                
-                for pattern in date_patterns:
-                    try:
-                        pd.to_datetime(sample_values, format=pattern)
-                        df[col] = pd.to_datetime(df[col], format=pattern, errors='coerce')
-                        break
-                    except:
-                        continue
+            try:
+                # Vérification de sécurité pour l'attribut dtype
+                if hasattr(df[col], 'dtype') and str(df[col].dtype) == 'object':
+                    # Essayer de détecter si c'est une colonne de date
+                    sample_values = df[col].dropna().head(10)
+                    
+                    for pattern in date_patterns:
+                        try:
+                            pd.to_datetime(sample_values, format=pattern)
+                            df[col] = pd.to_datetime(df[col], format=pattern, errors='coerce')
+                            break
+                        except:
+                            continue
+            except Exception:
+                # En cas d'erreur, on continue avec la colonne suivante
+                continue
         
         return df
     
@@ -115,18 +120,23 @@ class DataProcessor:
     def _clean_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
         """Nettoie les colonnes numériques"""
         for col in df.columns:
-            if df[col].dtype == 'object':
-                # Essayer de convertir en numérique
-                try:
-                    # Nettoyer les caractères non numériques
-                    cleaned = df[col].astype(str).str.replace(r'[^\d.-]', '', regex=True)
-                    numeric_values = pd.to_numeric(cleaned, errors='coerce')
-                    
-                    # Si plus de 50% des valeurs sont numériques, convertir
-                    if numeric_values.notna().sum() / len(numeric_values) > 0.5:
-                        df[col] = numeric_values
-                except:
-                    continue
+            try:
+                # Vérification de sécurité pour l'attribut dtype
+                if hasattr(df[col], 'dtype') and str(df[col].dtype) == 'object':
+                    # Essayer de convertir en numérique
+                    try:
+                        # Nettoyer les caractères non numériques
+                        cleaned = df[col].astype(str).str.replace(r'[^\d.-]', '', regex=True)
+                        numeric_values = pd.to_numeric(cleaned, errors='coerce')
+                        
+                        # Si plus de 50% des valeurs sont numériques, convertir
+                        if numeric_values.notna().sum() / len(numeric_values) > 0.5:
+                            df[col] = numeric_values
+                    except:
+                        continue
+            except Exception:
+                # En cas d'erreur, on continue avec la colonne suivante
+                continue
         
         return df
     
@@ -147,59 +157,70 @@ class DataProcessor:
         
         # Informations sur les colonnes
         for col in df.columns:
-            col_info = {
-                "name": str(col),
-                "dtype": str(df[col].dtype),
-                "missing_count": int(df[col].isna().sum()),
-                "missing_percentage": float((df[col].isna().sum() / len(df)) * 100),
-                "unique_count": int(df[col].nunique())
-            }
-            
-            summary["columns"][str(col)] = col_info
-            summary["data_types"][str(col)] = str(df[col].dtype)
-            summary["missing_values"][str(col)] = int(df[col].isna().sum())
-            
-            # Statistiques de base selon le type
-            if pd.api.types.is_numeric_dtype(df[col]):
-                col_stats = {
-                    "min": float(df[col].min()) if not df[col].isna().all() else None,
-                    "max": float(df[col].max()) if not df[col].isna().all() else None,
-                    "mean": float(df[col].mean()) if not df[col].isna().all() else None,
-                    "median": float(df[col].median()) if not df[col].isna().all() else None,
-                    "std": float(df[col].std()) if not df[col].isna().all() else None
-                }
-                summary["basic_stats"][str(col)] = col_stats
-            elif pd.api.types.is_datetime64_any_dtype(df[col]):
-                col_stats = {
-                    "min": df[col].min().isoformat() if not df[col].isna().all() else None,
-                    "max": df[col].max().isoformat() if not df[col].isna().all() else None,
-                    "range_days": int((df[col].max() - df[col].min()).days) if not df[col].isna().all() else None
-                }
-                summary["basic_stats"][str(col)] = col_stats
-            else:
-                # Colonnes catégorielles
-                value_counts = df[col].value_counts().head(10)
-                value_counts_dict = {str(k): int(v) for k, v in value_counts.items()}
-                col_stats = {
-                    "top_values": value_counts_dict,
-                    "most_common": str(df[col].mode().iloc[0]) if not df[col].mode().empty else None
-                }
-                summary["basic_stats"][str(col)] = col_stats
-            
-            # Échantillon de données
-            sample_values = df[col].dropna().head(5).tolist()
-            # Convertir en types JSON-sérialisables
-            serializable_samples = []
-            for val in sample_values:
-                if pd.isna(val):
-                    serializable_samples.append(None)
-                elif isinstance(val, (np.integer, np.floating)):
-                    serializable_samples.append(float(val))
-                elif isinstance(val, np.datetime64):
-                    serializable_samples.append(val.isoformat())
+            try:
+                # Vérification de sécurité pour l'attribut dtype
+                if not hasattr(df[col], 'dtype'):
+                    # Si la colonne n'a pas d'attribut dtype, on la traite comme object
+                    col_dtype = 'object'
                 else:
-                    serializable_samples.append(str(val))
-            summary["sample_data"][str(col)] = serializable_samples
+                    col_dtype = str(df[col].dtype)
+                
+                col_info = {
+                    "name": str(col),
+                    "dtype": col_dtype,
+                    "missing_count": int(df[col].isna().sum()),
+                    "missing_percentage": float((df[col].isna().sum() / len(df)) * 100),
+                    "unique_count": int(df[col].nunique())
+                }
+                
+                summary["columns"][str(col)] = col_info
+                summary["data_types"][str(col)] = col_dtype
+                summary["missing_values"][str(col)] = int(df[col].isna().sum())
+                
+                # Statistiques de base selon le type
+                if pd.api.types.is_numeric_dtype(df[col]):
+                    col_stats = {
+                        "min": float(df[col].min()) if not df[col].isna().all() else None,
+                        "max": float(df[col].max()) if not df[col].isna().all() else None,
+                        "mean": float(df[col].mean()) if not df[col].isna().all() else None,
+                        "median": float(df[col].median()) if not df[col].isna().all() else None,
+                        "std": float(df[col].std()) if not df[col].isna().all() else None
+                    }
+                    summary["basic_stats"][str(col)] = col_stats
+                elif pd.api.types.is_datetime64_any_dtype(df[col]):
+                    col_stats = {
+                        "min": df[col].min().isoformat() if not df[col].isna().all() else None,
+                        "max": df[col].max().isoformat() if not df[col].isna().all() else None,
+                        "range_days": int((df[col].max() - df[col].min()).days) if not df[col].isna().all() else None
+                    }
+                    summary["basic_stats"][str(col)] = col_stats
+                else:
+                    # Colonnes catégorielles
+                    value_counts = df[col].value_counts().head(10)
+                    value_counts_dict = {str(k): int(v) for k, v in value_counts.items()}
+                    col_stats = {
+                        "top_values": value_counts_dict,
+                        "most_common": str(df[col].mode().iloc[0]) if not df[col].mode().empty else None
+                    }
+                    summary["basic_stats"][str(col)] = col_stats
+                
+                # Échantillon de données
+                sample_values = df[col].dropna().head(5).tolist()
+                # Convertir en types JSON-sérialisables
+                serializable_samples = []
+                for val in sample_values:
+                    if pd.isna(val):
+                        serializable_samples.append(None)
+                    elif isinstance(val, (np.integer, np.floating)):
+                        serializable_samples.append(float(val))
+                    elif isinstance(val, np.datetime64):
+                        serializable_samples.append(val.isoformat())
+                    else:
+                        serializable_samples.append(str(val))
+                summary["sample_data"][str(col)] = serializable_samples
+            except Exception as e:
+                # En cas d'erreur, on continue avec la colonne suivante
+                continue
         
         # Statistiques globales
         summary["global_stats"] = {

@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
 
 class Settings(BaseSettings):
     """Configuration du micro-service d'analyse IA"""
@@ -20,11 +20,30 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     api_debug: bool = False
-    cors_origins: list = ["http://localhost:3000", "http://localhost:4200"]
+    
+    # Configuration CORS dynamique
+    cors_origins: List[str] = []
+    
+    # Variables d'environnement pour les URLs
+    backend_url: str = "http://localhost:3000"
+    frontend_url: str = "http://localhost:4200"
+    backend_service_url: str = "http://backend:3000"
+    frontend_service_url: str = "http://frontend:80"
 
     model_config = {
         "env_file": ".env",
         "case_sensitive": False
     }
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Construire la liste CORS à partir des variables d'environnement
+        if not self.cors_origins:
+            self.cors_origins = [
+                self.backend_url,
+                self.frontend_url,
+                self.backend_service_url,
+                self.frontend_service_url
+            ]
 
 settings = Settings() 
