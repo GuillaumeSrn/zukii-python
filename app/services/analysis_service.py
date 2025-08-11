@@ -8,7 +8,6 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
 import openai
-import os
 import logging
 import numpy as np
 
@@ -41,9 +40,7 @@ class SimpleAnalysisService:
     """Service d'analyse ultra-simplifié pour MVP"""
     
     def __init__(self):
-        # Client OpenAI optionnel: non requis pour les tests
-        api_key = os.environ.get("OPENAI_API_KEY")
-        self.openai_client = openai.OpenAI(api_key=api_key) if api_key else None
+        self.openai_client = openai.OpenAI()
         self.settings = {
             "model": "gpt-4o-mini",
             "max_tokens": 2000,
@@ -303,28 +300,13 @@ class SimpleAnalysisService:
             Réponds en français de manière professionnelle.
             """
             
-            # Si pas de client OpenAI (tests / dev), retourner une analyse factice déterministe
-            if self.openai_client is None:
-                synthetic = (
-                    "# Analyse synthétique\n\n"
-                    f"L'ensemble contient {len(df)} lignes et {len(df.columns)} colonnes. "
-                    "Cette analyse est générée sans appel OpenAI (mode test).\n\n"
-                    "## Points clés\n"
-                    + "\n".join(f"- {i}" for i in insights[:3])
-                )
-                return {
-                    "analysis": synthetic,
-                    "data_summary": convert_to_serializable(data_summary)
-                }
-
-            # Sinon, appel réel OpenAI
             response = self.openai_client.chat.completions.create(
                 model=self.settings["model"],
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=self.settings["max_tokens"],
                 temperature=self.settings["temperature"]
             )
-
+            
             return {
                 "analysis": response.choices[0].message.content,
                 "data_summary": convert_to_serializable(data_summary)
