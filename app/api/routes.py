@@ -66,13 +66,25 @@ async def analyze_data(
                 
                 # Décoder si nécessaire
                 if file.filename.endswith('.csv'):
-                    # Essayer différents encodages
+                    # Essayer différents encodages et séparateurs
                     for encoding in ['utf-8', 'latin-1', 'cp1252']:
-                        try:
-                            df = pd.read_csv(io.BytesIO(content), encoding=encoding)
-                            break
-                        except UnicodeDecodeError:
+                        for separator in [',', ';', '\t']:
+                            try:
+                                df = pd.read_csv(io.BytesIO(content), encoding=encoding, sep=separator)
+                                # Vérifier que le parsing a fonctionné (plus d'une colonne)
+                                if len(df.columns) > 1:
+                                    logger.info(f"Fichier {file.filename} parsé avec succès: {len(df.columns)} colonnes")
+                                    break
+                                else:
+                                    logger.warning(f"Parsing avec séparateur '{separator}' n'a donné qu'une colonne pour {file.filename}")
+                            except UnicodeDecodeError:
+                                continue
+                            except Exception as e:
+                                logger.warning(f"Erreur parsing avec séparateur '{separator}': {str(e)}")
+                                continue
+                        else:
                             continue
+                        break
                     else:
                         raise ValueError(f"Impossible de décoder le fichier {file.filename}")
                 elif file.filename.endswith('.xlsx'):
