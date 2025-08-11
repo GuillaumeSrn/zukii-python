@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
 import openai
+import os
 import logging
 import numpy as np
 
@@ -40,7 +41,13 @@ class SimpleAnalysisService:
     """Service d'analyse ultra-simplifié pour MVP"""
     
     def __init__(self):
-        self.openai_client = openai.OpenAI()
+        """Initialise le client OpenAI si une clé est disponible, sinon passe en mode offline.
+
+        Mode offline: génère une analyse déterministe locale (sans appel externe) pour permettre
+        les tests unitaires et l'exécution CI sans `OPENAI_API_KEY`.
+        """
+        api_key = os.getenv("OPENAI_API_KEY")
+        self.openai_client = openai.OpenAI(api_key=api_key) if api_key else None
         self.settings = {
             "model": "gpt-4o-mini",
             "max_tokens": 2000,
@@ -234,6 +241,29 @@ class SimpleAnalysisService:
     def _simple_ai_analysis(self, df: pd.DataFrame, question: str) -> Dict[str, Any]:
         """Analyse IA améliorée avec insights métier"""
         try:
+            # Mode offline: pas de clé API → produire une analyse déterministe locale
+            if self.openai_client is None:
+                column_types = {col: str(dtype) for col, dtype in df.dtypes.items()}
+                non_null_counts = df.notnull().sum().to_dict()
+                analysis_text = (
+                    "Analyse locale (offline). "
+                    f"Lignes: {len(df)}, Colonnes: {len(df.columns)}. "
+                    f"Types: {list(set(column_types.values()))}. "
+                    f"Question: {question}. "
+                    "Recommandation: compléter le dataset et vérifier la qualité des données."
+                )
+                data_summary = {
+                    "rows": int(len(df)),
+                    "columns": int(len(df.columns)),
+                    "column_types": column_types,
+                    "missing_values": convert_to_serializable(df.isnull().sum().to_dict()),
+                    "non_null_counts": convert_to_serializable(non_null_counts),
+                }
+                return {
+                    "analysis": analysis_text,
+                    "data_summary": convert_to_serializable(data_summary),
+                }
+
             # Analyser les données pour extraire des insights
             insights = []
             
