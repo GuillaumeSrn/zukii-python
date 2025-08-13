@@ -3,6 +3,7 @@ name: CI - Zukii Python Service
 on:
   push:
     branches: [ main, dev ]
+    tags: ['bloc2-*']
   pull_request:
     branches: [ main, dev ]
 
@@ -36,4 +37,5 @@ jobs:
           path: |
             logs
           if-no-files-found: ignore
+          retention-days: 14
 
