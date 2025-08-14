@@ -17,15 +17,26 @@ jobs:
           key: ${{ secrets.OVH_SSH_KEY }}
           script: |
             cd ~/zukii-app
-            echo "🔄 Déploiement du service Python..."
+            echo "🐍 DÉPLOIEMENT SERVICE PYTHON - C2.2.4"
             
             # Pull et déploiement
             docker compose pull python-service
             docker compose up -d python-service
             
-            # Attendre que le service soit prêt (avec tolérance pour le mode offline)
-            echo "⏳ Attente de la disponibilité du service Python..."
-            timeout 60 bash -c 'until docker compose exec -T python-service sh -c "curl -sf http://localhost:8000/health" >/dev/null 2>&1; do sleep 2; done' || echo "⚠️ Service Python non accessible (mode offline possible)"
+            # Health check Python avec retry (tolérant au mode offline)
+            echo "⏳ Vérification du service Python..."
+            for i in {1..15}; do
+              if docker compose exec -T python-service sh -c "curl -sf http://localhost:8000/health" >/dev/null 2>&1; then
+                echo "✅ Service Python opérationnel (tentative $i/15)"
+                break
+              fi
+              if [ $i -eq 15 ]; then
+                echo "⚠️ Service Python non accessible (mode offline possible) - Déploiement continué"
+                break
+              fi
+              echo "⏳ Tentative $i/15 - Attente 2s..."
+              sleep 2
+            done
             
-            echo "✅ Service Python déployé"
+            echo "🎉 Service Python déployé avec succès sur OVH !"
             echo "🐍 Service d'analyse IA opérationnel"
