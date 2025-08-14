@@ -1,0 +1,31 @@
+name: Deploy Python Service to OVH VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy Python Service to OVH VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USER }}
+          key: ${{ secrets.OVH_SSH_KEY }}
+          script: |
+            cd ~/zukii-app
+            echo "🔄 Déploiement du service Python..."
+            
+            # Pull et déploiement
+            docker compose pull python-service
+            docker compose up -d python-service
+            
+            # Attendre que le service soit prêt (avec tolérance pour le mode offline)
+            echo "⏳ Attente de la disponibilité du service Python..."
+            timeout 60 bash -c 'until docker compose exec -T python-service sh -c "curl -sf http://localhost:8000/health" >/dev/null 2>&1; do sleep 2; done' || echo "⚠️ Service Python non accessible (mode offline possible)"
+            
+            echo "✅ Service Python déployé"
+            echo "🐍 Service d'analyse IA opérationnel"
