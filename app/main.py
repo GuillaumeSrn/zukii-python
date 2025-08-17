@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.api.routes import router
+from app.api.metrics import metrics_router
 from app.config import settings
 
 # Configuration
@@ -31,6 +32,7 @@ app.add_middleware(
 
 # Inclusion des routes
 app.include_router(router, prefix="/api/v1")
+app.include_router(metrics_router)  # Métriques Prometheus
 
 @app.get("/")
 async def root():
