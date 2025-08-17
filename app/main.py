@@ -8,6 +8,7 @@ import logging
 
 from app.api.routes import router
 from app.api.metrics import metrics_router
+from app.api.version import version_router
 from app.config import settings
 
 # Configuration
@@ -33,6 +34,7 @@ app.add_middleware(
 # Inclusion des routes
 app.include_router(router, prefix="/api/v1")
 app.include_router(metrics_router)  # Métriques Prometheus
+app.include_router(version_router)  # Version
 
 @app.get("/")
 async def root():
