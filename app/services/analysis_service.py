@@ -94,9 +94,14 @@ class SimpleAnalysisService:
             summary = self._generate_intelligent_summary(df_anonymized, ai_analysis["analysis"])
             
             # Rapport de confidentialité
+            sensitive_columns = []
+            if anonymize_data:
+                sensitive_patterns = ['email', 'phone', 'address', 'name', 'id', 'user']
+                sensitive_columns = [col for col in df.columns if any(pattern in col.lower() for pattern in sensitive_patterns)]
+            
             privacy_report = {
                 "anonymization_applied": anonymize_data,
-                "sensitive_columns_detected": df.columns.tolist() if anonymize_data else [],
+                "sensitive_columns_detected": sensitive_columns,
                 "data_retention_days": 30,
                 "compliance_status": "compliant",
                 "data_processing_purpose": "analyse_ia",
@@ -107,7 +112,7 @@ class SimpleAnalysisService:
             processing_time = (datetime.now() - start_time).total_seconds()
             performance_metrics = {
                 "processing_time": processing_time,
-                "openai_tokens_used": 1000,  # Estimation
+                "openai_tokens_used": self._calculate_tokens_used(ai_analysis),
                 "openai_response_time": processing_time * 0.8,
                 "chart_generation_time": processing_time * 0.2
             }
@@ -133,7 +138,7 @@ class SimpleAnalysisService:
                 "anomalies": convert_to_serializable(anomalies),
                 "recommendations": convert_to_serializable(recommendations),
                 "charts": convert_to_serializable(charts),
-                "confidence_score": 0.85,
+                "confidence_score": self._calculate_confidence_score(df, ai_analysis["analysis"]),
                 "performance_metrics": convert_to_serializable(performance_metrics),
                 "privacy_report": convert_to_serializable(privacy_report),
                 "data_summary": convert_to_serializable(data_summary),
@@ -761,4 +766,45 @@ class SimpleAnalysisService:
                 "format": "json"
             })
         
-        return charts 
+        return charts
+    
+    def _calculate_confidence_score(self, df: pd.DataFrame, ai_analysis: str) -> float:
+        """Calcule un score de confiance basé sur la qualité des données et l'analyse"""
+        try:
+            # Base score (0.7)
+            base_score = 0.7
+            
+            # Bonus pour la qualité des données
+            missing_percentage = (df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100
+            data_quality_bonus = max(0, (100 - missing_percentage) / 100 * 0.2)
+            
+            # Bonus pour la taille du dataset
+            size_bonus = min(0.1, len(df) / 1000 * 0.1)  # Max 0.1 pour datasets > 1000 lignes
+            
+            # Bonus pour la richesse de l'analyse IA
+            analysis_bonus = 0.0
+            if len(ai_analysis) > 500:  # Analyse détaillée
+                analysis_bonus = 0.05
+            if len(ai_analysis) > 1000:  # Analyse très détaillée
+                analysis_bonus = 0.1
+            
+            # Calcul final
+            confidence = base_score + data_quality_bonus + size_bonus + analysis_bonus
+            return min(0.95, max(0.6, confidence))  # Entre 60% et 95%
+            
+        except Exception as e:
+            logger.error(f"Erreur calcul score confiance: {str(e)}")
+            return 0.75  # Fallback
+    
+    def _calculate_tokens_used(self, ai_analysis: dict) -> int:
+        """Calcule une estimation des tokens utilisés basée sur la réponse"""
+        try:
+            if "analysis" in ai_analysis:
+                # Estimation simple : ~4 caractères par token
+                text_length = len(ai_analysis["analysis"])
+                estimated_tokens = max(100, int(text_length / 4))
+                return min(2000, estimated_tokens)  # Cap à 2000 tokens
+            return 500  # Fallback
+        except Exception as e:
+            logger.error(f"Erreur calcul tokens: {str(e)}")
+            return 500  # Fallback
