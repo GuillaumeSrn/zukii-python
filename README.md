@@ -1,6 +1,6 @@
 # 🚀 Zukii Analysis Service - MVP
 
-Micro-service d'analyse IA simplifié pour fichiers CSV avec intégration OpenAI GPT.
+Micro-service d'analyse IA simplifié pour fichiers CSV avec intégration OpenAI GPT par defaut, modifiable.
 
 ## 📋 Fonctionnalités MVP
 
@@ -130,10 +130,3 @@ OPENAI_TEMPERATURE=0.3
 ```bash
 pytest tests/
 ```
-
-## 📝 Notes MVP
-
-- **Service simplifié** : Code optimisé pour MVP
-- **Graphiques JSON** : Données structurées pour frontend
-- **Anonymisation basique** : Protection RGPD simplifiée
-- **Performance** : Optimisé pour rapidité de développement
